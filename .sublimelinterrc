@@ -1,0 +1,18 @@
+{
+	"linters": {
+		"eslint": {
+			"@disable": false,
+			"args": [],
+			"excludes": [
+				"*.php",
+				"*.html",
+				"*.ejs"
+			]
+		},
+		"jshint": {
+			"@disable": true,
+			"args": [],
+			"excludes": []
+		}
+	}
+}

@@ -1,0 +1,42 @@
+@import 'better-easing';
+@import 'rem';
+
+@import 'variables';
+
+@import 'placeholders';
+@import 'keyframes';
+@import 'mixins';
+
+body {
+	@include fzr(13px);
+	background-color: white;
+
+	@include mq(xs) {
+		background-color: black;
+	}
+}
+
+#danmaku-container {
+	$gutter-h: 0;
+	$gutter-v: 10px;
+
+	position: fixed;
+	left: $gutter-h; right: $gutter-h;
+	top: $gutter-v; bottom: $gutter-v;
+	width: calc(100% - #{$gutter-h} * 2);
+	height: calc(100% - #{$gutter-v} * 2);
+
+	> div > div {
+		$shadow: fade-out(black, .2);
+		font-family: "Microsoft YaHei";
+		text-shadow: -1px 0 $shadow, 0 1px $shadow, 1px 0 $shadow, 0 -1px $shadow;
+		will-change: transform;
+		// font-weight: bold;
+		color: #fff;
+	}
+
+	.cmt {
+		transform: translateZ(0);
+		font-family: "Microsoft YaHei";
+	}
+}
