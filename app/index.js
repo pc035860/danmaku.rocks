@@ -39,10 +39,22 @@ $(() => {
       }
     }
 
-    danmaku.emit({
-      html: true,
-      text: `<span class="nick" style="color: ${tags.color};">${tags.displayName || nick}:</span> <span class="message">${message}</span>`
-    });
+    if(/^\x01ACTION.*\x01$/.test(message)) {
+      // action
+      const actionMessage = message.replace(/^\x01ACTION/, '').replace(/\x01$/, '').trim();
+      danmaku.emit({
+        html: true,
+        text: `<span class="action" style="color: ${tags.color};">${actionMessage}</span>`,
+        mode: 'bottom'
+      });
+    }
+    else {
+      // normal message
+      danmaku.emit({
+        html: true,
+        text: `<span class="nick" style="color: ${tags.color};">${tags.displayName || nick}:</span> <span class="message">${message}</span>`
+      });
+    }
   });
 
   $(window).on('resize', debounce(() => danmaku.resize(), 100));
