@@ -8,17 +8,12 @@
 @import 'mixins';
 
 body {
-	@include fzr(13px);
-	background-color: white;
 
-	@include mq(xs) {
-		background-color: black;
-	}
 }
 
 #danmaku-container {
 	$gutter-h: 0;
-	$gutter-v: 10px;
+	$gutter-v: 5px;
 
 	position: fixed;
 	left: $gutter-h; right: $gutter-h;
@@ -27,16 +22,32 @@ body {
 	height: calc(100% - #{$gutter-v} * 2);
 
 	> div > div {
-		$shadow: fade-out(black, .2);
+		$color-light: #333;
+		$color-dark: #fff;
+		$shadow-light: fade-out($color-dark, .2);
+		$shadow-dark: fade-out($color-light, .2);
+
 		font-family: "Microsoft YaHei";
-		text-shadow: -1px 0 $shadow, 0 1px $shadow, 1px 0 $shadow, 0 -1px $shadow;
+		text-shadow: -1px 0 $shadow-light, 0 1px $shadow-light, 1px 0 $shadow-light, 0 -1px $shadow-light;
 		will-change: transform;
 		// font-weight: bold;
 		color: #fff;
-	}
+		font-size: 16px;
 
-	.cmt {
-		transform: translateZ(0);
-		font-family: "Microsoft YaHei";
+		@at-root .theme-dark & {
+			text-shadow: -1px 0 $shadow-dark, 0 1px $shadow-dark, 1px 0 $shadow-dark, 0 -1px $shadow-dark;
+		}
+
+		.nick {
+
+		}
+
+		.message {
+			color: $color-light;
+
+			@at-root .theme-dark & {
+				color: $color-dark;
+			}
+		}
 	}
 }
