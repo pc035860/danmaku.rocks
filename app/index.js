@@ -11,6 +11,15 @@ import parseTags from './utils/parseTags';
 import * as colors from './utils/colors';
 
 $(() => {
+  /**
+   * parameters
+   *
+   * @param {string} channel   channel id
+   * @param {string} shownick  show nick before message or not (default: "false")
+   * @param {string} theme     target background theme dark or light (default: "light")
+   * @param {string} speed     danmaku speed (default: 100)
+   *                           see https://github.com/weizhenye/Danmaku#speed for more information
+   */
   const params = parseQuery(location.search);
 
   const danmaku = new Danmaku();
@@ -20,7 +29,7 @@ $(() => {
   });
 
   const socket = createSocketEmitter({
-    nick: params.nick || 'justinfan12345',
+    nick: 'justinfan12345',
     channel: params.channel
   });
 
@@ -50,10 +59,19 @@ $(() => {
     }
     else {
       // normal message
-      danmaku.emit({
-        html: true,
-        text: `<span class="nick" style="color: ${tags.color};">${tags.displayName || nick}:</span> <span class="message">${message}</span>`
-      });
+
+      if (params.shownick && params.shownick === 'true') {
+        danmaku.emit({
+          html: true,
+          text: `<span class="nick" style="color: ${tags.color};">${tags.displayName || nick}:</span> <span class="message">${message}</span>`
+        });
+      }
+      else {
+        danmaku.emit({
+          html: true,
+          text: `<span class="message" style="color: ${tags.color};">${message}</span>`
+        });
+      }
     }
   });
 
