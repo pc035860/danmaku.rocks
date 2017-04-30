@@ -2,7 +2,7 @@
 
 import ee from 'event-emitter';
 
-import parseIRC from './utils/parseIRC';
+import parseIRC from './parseIRC';
 
 const DEFAULT_OPTIONS = {
   channel: null,
