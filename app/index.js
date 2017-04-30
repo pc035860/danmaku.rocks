@@ -176,6 +176,9 @@ $(() => {
   if (params.highlight) {
     $body.addClass(`highlight-${params.highlight}`);
   }
+  if (boolParam('showstream')) {
+    $body.addClass(`showstream`);
+  }
 
   /**
    * update title

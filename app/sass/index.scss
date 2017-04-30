@@ -13,6 +13,10 @@ body {
 	margin: 0;
 	padding: 0;
 	font-family: "Hiragino Sans GB","华文细黑","STHeiti","微软雅黑","Microsoft YaHei",SimHei,"Helvetica Neue",Helvetica,Arial,sans-serif !important;
+
+	&.showstream {
+		background-color: black;
+	}
 }
 
 #stream {
