@@ -1,0 +1,3 @@
+[submodule "app/modules/Danmaku"]
+	path = app/modules/Danmaku
+	url = git@github.com:pc035860/Danmaku.git
