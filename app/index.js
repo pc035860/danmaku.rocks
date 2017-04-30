@@ -4,6 +4,7 @@ import './sass/index.scss';
 import $ from 'jquery';
 import Danmaku from '_Danmaku';
 import debounce from 'lodash/debounce';
+import raf from 'raf';
 import { parse as parseQuery } from 'query-string';
 
 import createSocketEmitter from './createSocketEmitter';
@@ -20,13 +21,18 @@ $(() => {
    * @param {string}  channel     channel id
    * @param {boolean} showstream  show embedded stream
    * @param {boolean} shownick    show nick before message or not (default: "false")
+   * @param {string}  highlight   which part will colors be applied "nick" or "message" (default: "nick")
+   *                              only works when shownick is activated
    * @param {boolean} showbadges  show badges before message or not (default: "false")
-   * @param {string}  theme       target background theme dark or light (default: "light")
+   * @param {string}  theme       target background theme "dark" or "light" (default: "light")
    * @param {string}  speed       danmaku speed (default: 100)
    *                              see https://github.com/weizhenye/Danmaku#speed for more information
    * @param {boolean} reverse     reverse danmaku's vertical position
    */
-  const params = parseQuery(location.search);
+  const params = Object.assign({}, {
+    theme: 'dark',
+    highlight: 'nick'
+  }, parseQuery(location.search));
 
   const boolParam = (name) => {
     if (params[name] && (
@@ -54,8 +60,7 @@ $(() => {
     loadSubscriberBadges(params.channel);
   }
 
-  let cheers;
-  const cheersPromise = getCheers(params.channel).then(res => cheers = res);
+  const cheersPromise = getCheers(params.channel);
 
   /**
    * Danmaku
@@ -67,6 +72,7 @@ $(() => {
     speed: params.speed ? Number(params.speed) : 100,
     reverse: boolParam('reverse')
   });
+  $(window).on('resize', debounce(() => danmaku.resize(), 100));
 
   /**
    * Socket
@@ -75,7 +81,7 @@ $(() => {
     nick: 'justinfan12345',
     channel: params.channel
   });
-  const handleMsg = (nick, rawTags, message) => {
+  const handleMsg = (cheers, nick, rawTags, message) => {
     const tags = parseTags(nick, rawTags);
 
     console.info('$msg', nick, tags.color, message);
@@ -118,9 +124,16 @@ $(() => {
     }
     else if (boolParam('shownick')) {
       // show nick
+
+      let text = `${linePrepend}<span class="nick" style="color: ${tags.color};">${tags.displayName || nick}:</span> <span class="message">${message}</span>`;
+
+      if (params.highlight && params.highlight === 'message') {
+        text = `${linePrepend}<span class="nick">${tags.displayName || nick}:</span> <span class="message" style="color: ${tags.color};">${message}</span>`
+      }
+
       danmaku.emit({
         html: true,
-        text: `${linePrepend}<span class="nick">${tags.displayName || nick}:</span> <span class="message" style="color: ${tags.color};">${message}</span>`
+        text
       });
     }
     else {
@@ -132,14 +145,29 @@ $(() => {
     }
   };
   socket.on('$msg', (nick, rawTags, message) => {
-    cheersPromise.then(() => {
-      handleMsg(nick, rawTags, message);
+    const perfNow = window.performance.now();
+    cheersPromise.then((cheers) => {
+      // skip comments user might not see (page is not visible)
+      raf(tickNow => {
+        const visibilityDiff = (tickNow - perfNow) / 1000;
+        const threshold = danmaku.duration / 5;
+        if (visibilityDiff > threshold) {
+          console.info('comment skipped');
+          return;
+        }
+        handleMsg(cheers, nick, rawTags, message);
+      });
     });
   });
 
-  $(window).on('resize', debounce(() => danmaku.resize(), 100));
-
+  /**
+   * add <body> classes
+   */
+  const $body = $('body');
   if (params.theme) {
-    $('body').addClass(`theme-${params.theme}`);
+    $body.addClass(`theme-${params.theme}`);
+  }
+  if (params.highlight) {
+    $body.addClass(`highlight-${params.highlight}`);
   }
 });

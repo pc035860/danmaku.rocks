@@ -12,6 +12,7 @@ $max-z-index: 2147483647;
 body {
 	margin: 0;
 	padding: 0;
+	font-family: "Hiragino Sans GB","华文细黑","STHeiti","微软雅黑","Microsoft YaHei",SimHei,"Helvetica Neue",Helvetica,Arial,sans-serif !important;
 }
 
 #stream {
@@ -48,31 +49,23 @@ body {
 	> div > div {
 		$color-light: #333;
 		$color-dark: #fff;
-		$shadow-light: fade-out($color-dark, .2);
-		$shadow-dark: fade-out($color-light, .2);
+		$shadow: fade-out($color-light, .2);
 
 		font-family: "Microsoft YaHei";
-		text-shadow: -1px 0 $shadow-light, 0 1px $shadow-light, 1px 0 $shadow-light, 0 -1px $shadow-light;
+		text-shadow: -1px 0 $shadow, 0 1px $shadow, 1px 0 $shadow, 0 -1px $shadow;
 		will-change: transform;
-		// font-weight: bold;
 		color: #fff;
 		font-size: 2vh;
 		padding: 3px 0;
 
-		@at-root .theme-dark & {
-			text-shadow: -1px 0 $shadow-dark, 0 1px $shadow-dark, 1px 0 $shadow-dark, 0 -1px $shadow-dark;
-		}
+		// @at-root .theme-dark & {
+		// 	text-shadow: -1px 0 $shadow-dark, 0 1px $shadow-dark, 1px 0 $shadow-dark, 0 -1px $shadow-dark;
+		// }
 
-		.nick {
-			color: $color-light;
-
-			@at-root .theme-dark & {
-				color: $color-dark;
-			}
-		}
-
-		.message {
-		}
+		@at-root .highlight-message.theme-light & .nick { color: $color-light; }
+		@at-root .highlight-message.theme-dark & .nick { color: $color-dark; }
+		@at-root .highlight-nick.theme-light & .message { color: $color-light; }
+		@at-root .highlight-nick.theme-dark & .message { color: $color-dark; }
 
 		.tag {
 			position: relative;
@@ -81,7 +74,6 @@ body {
 			display: inline-block;
 			height: 18px;
 			min-width: 18px;
-			width: expression(document.body.clientWidth < $width ? "18px":"auto");
 			padding: 0;
 			margin-right: 3px;
 			overflow: hidden;

@@ -14,11 +14,15 @@ const transformBadges = (sets) => {
   });
 };
 
-const createBadgeStyleTag = (type, version, url) => {
+const injectCSS = (css) => {
   const $css = $('<style />');
   $css.attr('type', 'text/css');
-  $css.html(`.${type}-${version} { background-image: url("${url.replace('http:', 'https:')}"); }`);
-  return $css;
+  $css.html(css);
+  $('head').append($css);
+}
+
+const getBadgeCSS = (type, version, url) => {
+  return `.${type}-${version} { background-image: url("${url.replace('http:', 'https:')}"); }`;
 };
 
 export const loadSubscriberBadges = (channel) => {
@@ -27,23 +31,25 @@ export const loadSubscriberBadges = (channel) => {
     return api(`https://badges.twitch.tv/v1/badges/channels/${channelId}/display`);
   })
   .then((res) => {
+    let css = '';
     transformBadges(res.badge_sets).forEach((badge) => {
       badge.versions.forEach((version) => {
-        const $style = createBadgeStyleTag(badge.type, version.type, version.image_url_4x);
-        $('head').append($style);
+        css += getBadgeCSS(badge.type, version.type, version.image_url_4x) + '\n';
       });
     });
+    injectCSS(css);
   });
 };
 
 export const loadGlobalBadges = () => {
   return api('https://badges.twitch.tv/v1/badges/global/display')
   .then((res) => {
+    let css = '';
     transformBadges(res.badge_sets).forEach((badge) => {
       badge.versions.forEach((version) => {
-        const $style = createBadgeStyleTag(badge.type, version.type, version.image_url_4x);
-        $('head').append($style);
+        css += getBadgeCSS(badge.type, version.type, version.image_url_4x) + '\n';
       });
     });
+    injectCSS(css);
   })
 };
