@@ -184,5 +184,5 @@ $(() => {
   .then((c) => {
     const name = c.display_name || c.name;
     document.title = `${name} @ ttv-danmaku`;
-  })
+  });
 });

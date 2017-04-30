@@ -55,8 +55,7 @@ body {
 		text-shadow: -1px 0 $shadow, 0 1px $shadow, 1px 0 $shadow, 0 -1px $shadow;
 		will-change: transform;
 		color: #fff;
-		font-size: 2vh;
-		padding: 3px 0;
+		font-size: 2.2vh;
 
 		// @at-root .theme-dark & {
 		// 	text-shadow: -1px 0 $shadow-dark, 0 1px $shadow-dark, 1px 0 $shadow-dark, 0 -1px $shadow-dark;
@@ -72,10 +71,12 @@ body {
 			top: -1px;
 
 			display: inline-block;
-			height: 18px;
+			width: 3vh;
+			height: 3vh;
 			min-width: 18px;
+
 			padding: 0;
-			margin-right: 3px;
+			margin-right: 0.2em;
 			overflow: hidden;
 
 			border-radius: 2px;
@@ -89,7 +90,12 @@ body {
 		.emoticon {
 			position: relative;
 			top: -2px;
+
+			width: auto;
+			height: 3vh;
+
 			margin: -3px 0;
+
 			vertical-align: middle;
 		}
 	}
