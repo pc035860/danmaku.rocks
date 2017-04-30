@@ -5,7 +5,7 @@ import $ from 'jquery';
 import Danmaku from '_Danmaku';
 import debounce from 'lodash/debounce';
 import raf from 'raf';
-import { parse as parseQuery } from 'query-string';
+import { parse as parseQuery, stringify as makeQuery } from 'query-string';
 
 import createSocketEmitter from './createSocketEmitter';
 import parseTags from './parseTags';
@@ -46,7 +46,12 @@ $(() => {
   };
 
   if (!params.channel) {
-    throw new Error('No "channel" provided.');
+    const q = makeQuery(Object.assign(params, {
+      channel: 'miao11255',
+      showstream: 1
+    }));
+    window.location.href = `?${q}`;
+    return;
   }
 
   if (boolParam('showstream')) {
