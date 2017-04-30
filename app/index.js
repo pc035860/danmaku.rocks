@@ -17,12 +17,14 @@ $(() => {
   /**
    * parameters
    *
-   * @param {string} channel     channel id
-   * @param {string} shownick    show nick before message or not (default: "false")
-   * @param {string} showbadges  show badges before message or not (default: "false")
-   * @param {string} theme       target background theme dark or light (default: "light")
-   * @param {string} speed       danmaku speed (default: 100)
-   *                             see https://github.com/weizhenye/Danmaku#speed for more information
+   * @param {string}  channel     channel id
+   * @param {boolean} showstream  show embedded stream
+   * @param {boolean} shownick    show nick before message or not (default: "false")
+   * @param {boolean} showbadges  show badges before message or not (default: "false")
+   * @param {string}  theme       target background theme dark or light (default: "light")
+   * @param {string}  speed       danmaku speed (default: 100)
+   *                              see https://github.com/weizhenye/Danmaku#speed for more information
+   * @param {boolean} reverse     reverse danmaku's vertical position
    */
   const params = parseQuery(location.search);
 
@@ -39,6 +41,12 @@ $(() => {
 
   if (!params.channel) {
     throw new Error('No "channel" provided.');
+  }
+
+  if (boolParam('showstream')) {
+    const $stream = $('#stream');
+    $stream.attr('src', $stream.data('src').replace('{CHANNEL}', params.channel));
+    $stream.show();
   }
 
   if (boolParam('showbadges')) {
