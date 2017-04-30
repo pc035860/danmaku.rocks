@@ -40,6 +40,9 @@ const fuse = new FuseBox({
     jquery: {
       exports: '$'
     }
+  },
+  alias: {
+    _Danmaku: '~/modules/Danmaku/src/index.js'
   }
 });
 

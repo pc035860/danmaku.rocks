@@ -11,15 +11,25 @@ body {
 
 }
 
-#danmaku-container {
-	$gutter-h: 0;
-	$gutter-v: 5px;
+#position {
+	box-sizing: border-box;
 
 	position: fixed;
-	left: $gutter-h; right: $gutter-h;
-	top: $gutter-v; bottom: $gutter-v;
-	width: calc(100% - #{$gutter-h} * 2);
-	height: calc(100% - #{$gutter-v} * 2);
+	left: 0; right: 0;
+	top: 0; bottom: 0;
+	width: 100%;
+	height: 100%;
+
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+
+	padding: 5px 0;
+}
+
+#danmaku-container {
+	width: 100%;
+	height: 100%;
 
 	> div > div {
 		$color-light: #333;
@@ -72,7 +82,7 @@ body {
 
 		.emoticon {
 			position: relative;
-			top: -1px;
+			top: -2px;
 			margin: -3px 0;
 			vertical-align: middle;
 		}

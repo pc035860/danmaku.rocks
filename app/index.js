@@ -2,7 +2,7 @@
 import './sass/index.scss';
 
 import $ from 'jquery';
-import Danmaku from 'danmaku';
+import Danmaku from '_Danmaku';
 import debounce from 'lodash/debounce';
 import { parse as parseQuery } from 'query-string';
 
@@ -27,7 +27,11 @@ $(() => {
   const params = parseQuery(location.search);
 
   const boolParam = (name) => {
-    if (params[name] && params[name] === 'true') {
+    if (params[name] && (
+          params[name] === 'true' ||
+          params[name] === '1'
+        )
+      ) {
       return true;
     }
     return false;
@@ -52,7 +56,8 @@ $(() => {
   const danmaku = new Danmaku();
   danmaku.init({
     container: document.getElementById('danmaku-container'),
-    speed: params.speed ? Number(params.speed) : 100
+    speed: params.speed ? Number(params.speed) : 100,
+    reverse: boolParam('reverse')
   });
 
   /**
