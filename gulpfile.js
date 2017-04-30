@@ -56,6 +56,7 @@ gulp.task('copy-public', ['hash-bundle'], function () {
   var others = gulp.src([
         path.join(myPath.public, 'images', '**'),
         path.join(myPath.public, 'manifest.json'),
+        path.join(myPath.public, 'favicon.ico'),
       ], { base: myPath.public })
       .pipe(gulp.dest(myPath.dist));
 

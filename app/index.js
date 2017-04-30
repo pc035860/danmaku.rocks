@@ -13,6 +13,7 @@ import parseEmotes from './parseEmotes';
 import * as colors from './utils/colors';
 import { loadSubscriberBadges, loadGlobalBadges } from './badges';
 import { get as getCheers } from './cheers';
+import { getChannel } from './twitchApi';
 
 $(() => {
   /**
@@ -175,4 +176,13 @@ $(() => {
   if (params.highlight) {
     $body.addClass(`highlight-${params.highlight}`);
   }
+
+  /**
+   * update title
+   */
+  getChannel(params.channel)
+  .then((c) => {
+    const name = c.display_name || c.name;
+    document.title = `${name} @ ttv-danmaku`;
+  })
 });
