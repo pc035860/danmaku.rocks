@@ -152,19 +152,10 @@ body {
 	}
 
 	// 隱藏聊天室
-	@at-root &.nochat {
-		#stream-wrap {
-			right: 0;
-			width: 100%;
-		}
-
-		#chat-wrap {
-			display: none;
-		}
-
-		#danmaku-position {
-			right: 0;
-			width: 100%;
-		}
+	@at-root &.no-chat {
+		@extend %hide-chat;
+	}
+	@at-root &.stream-fullscreen {
+		@extend %hide-chat;
 	}
 }

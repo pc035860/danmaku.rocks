@@ -16,6 +16,15 @@ import { getChannel } from './twitchApi';
 import boolish from './utils/boolish';
 import createWatchParams from './createWatchParams';
 
+const EVT_FULLSCREEN = 'fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange';
+
+const isElementFullscreen = () => {
+  return !!(document.fullscreenElement ||
+            document.mozFullScreenElement ||
+            document.webkitFullscreenElement ||
+            document.msFullscreenElement);
+};
+
 $(() => {
   /**
    * parameters
@@ -30,7 +39,9 @@ $(() => {
    *                              see https://github.com/weizhenye/Danmaku#speed for more information
    * @param {boolean} reverse     reverse danmaku's vertical position
    */
-  const params = createWatchParams(parseQuery(location.search));
+  const params = createWatchParams(parseQuery(location.search), {
+    channel: 'c'  // alias
+  });
   const boolParam = boolish(() => params.get());
 
   if (!params.get('channel')) {
@@ -86,6 +97,16 @@ $(() => {
     reverse: boolParam('reverse')
   });
   $(window).on('resize', debounce(() => danmaku.resize(), 100));
+  $(document).on(EVT_FULLSCREEN, ($evt) => {
+    if (isElementFullscreen()) {
+      const isStreamIframe = $evt.target.id === 'stream';
+      $body.toggleClass('stream-fullscreen', isStreamIframe);
+    }
+    else {
+      $body.removeClass('stream-fullscreen');
+    }
+    danmaku.resize();
+  });
   // TODO: 在調整 nochat 的時候要觸發 danmaku.resize()
 
   /**
@@ -98,7 +119,7 @@ $(() => {
   const handleMsg = (cheers, nick, rawTags, message) => {
     const tags = parseTags(nick, rawTags);
 
-    console.info('$msg', nick, tags.color, message);
+    // console.info('$msg', nick, tags.color, message);
 
     let action = false;
     let linePrepend = '';  // message text line

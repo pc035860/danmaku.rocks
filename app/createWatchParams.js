@@ -10,13 +10,16 @@ const defaultParams = {
   showstream: 0
 };
 
-export default function createWatchParams(initParams = {}) {
+export default function createWatchParams(initParams = {}, alias = {}) {
   const instance = ee({});
 
   const params = Object.assign({}, defaultParams, initParams);
 
   const get = (name) => {
     if (name) {
+      if (alias[name]) {
+        return params[name] || params[alias[name]];
+      }
       return params[name];
     }
     return { ...params };

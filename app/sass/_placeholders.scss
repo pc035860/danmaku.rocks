@@ -4,3 +4,19 @@
 	text-rendering: auto;
 	-webkit-font-smoothing: antialiased;
 }
+
+%hide-chat {
+	#stream-wrap {
+		right: 0;
+		width: 100%;
+	}
+
+	#chat-wrap {
+		display: none;
+	}
+
+	#danmaku-position {
+		right: 0;
+		width: 100%;
+	}
+}
