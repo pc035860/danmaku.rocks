@@ -6,6 +6,7 @@ var replace = require('gulp-replace');
 var hash = require('gulp-hash');
 var mergeStream = require('merge-stream');
 var htmlmin = require('gulp-htmlmin');
+var rename = require('gulp-rename');
 
 var myPath = {
   app: path.resolve(__dirname, 'app'),
@@ -83,6 +84,8 @@ gulp.task('update-index', ['copy'], function () {
   var assets = require(path.join(myPath.dist, 'assets.json'));
   return gulp.src(path.join(myPath.dist, 'index.html'))
   .pipe(replace('bundle.js', assets['bundle.js']))
+  .pipe(gulp.dest(myPath.dist))
+  .pipe(rename('watch.html'))  // make a copy - watch.html
   .pipe(gulp.dest(myPath.dist));
 });
 
