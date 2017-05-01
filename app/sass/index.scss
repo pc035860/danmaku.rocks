@@ -10,6 +10,8 @@
 $max-z-index: 2147483647;
 $bg-theater: #17141f;
 $width-chat: 340px;
+$size-font: 2.2vh;
+$size-emote: 3.3vh;
 
 body {
 	margin: 0;
@@ -85,7 +87,7 @@ body {
 		text-shadow: -1px 0 $shadow, 0 1px $shadow, 1px 0 $shadow, 0 -1px $shadow;
 		will-change: transform;
 		color: #fff;
-		font-size: 2.2vh;
+		font-size: $size-font;
 
 		// @at-root .theme-dark & {
 		// 	text-shadow: -1px 0 $shadow-dark, 0 1px $shadow-dark, 1px 0 $shadow-dark, 0 -1px $shadow-dark;
@@ -101,8 +103,8 @@ body {
 			top: -1px;
 
 			display: inline-block;
-			width: 3vh;
-			height: 3vh;
+			width: $size-emote;
+			height: $size-emote;
 			min-width: 18px;
 
 			padding: 0;
@@ -122,7 +124,7 @@ body {
 			top: -2px;
 
 			width: auto;
-			height: 3vh;
+			height: $size-emote;
 
 			margin: -3px 0;
 
