@@ -8,6 +8,8 @@
 @import 'mixins';
 
 $max-z-index: 2147483647;
+$bg-theater: #17141f;
+$width-chat: 340px;
 
 body {
 	margin: 0;
@@ -15,11 +17,15 @@ body {
 	font-family: "Hiragino Sans GB","华文细黑","STHeiti","微软雅黑","Microsoft YaHei",SimHei,"Helvetica Neue",Helvetica,Arial,sans-serif !important;
 
 	&.showstream {
-		background-color: black;
+		background-color: $bg-theater;
 	}
 }
 
 #stream {
+	position: relative;
+	height: 100%;
+}
+#stream-wrap {
 	display: none;
 
 	position: fixed; z-index: 0;
@@ -27,9 +33,29 @@ body {
 	top: 0; bottom: 0;
 	width: 100%;
 	height: 100%;
+
+	@at-root .showstream & {
+		display: block;
+	}
+}
+#chat {
+	position: absolute;
+	left: 0; right: 0;
+	top: 0; bottom: 0;
+	width: 100%;
+	height: 100%;
+}
+#chat-wrap {
+	display: none;
+
+	position: absolute;
+	right: 0;
+	top: 0; bottom: 0;
+	width: $width-chat;
+	background-color: $bg-theater;
 }
 
-#position {
+#danmaku-position {
 	box-sizing: border-box;
 
 	position: fixed; z-index: $max-z-index;
@@ -101,6 +127,42 @@ body {
 			margin: -3px 0;
 
 			vertical-align: middle;
+		}
+	}
+}
+
+// 觀賞模式
+.showstream.watch {
+	#stream-wrap {
+		display: block;
+
+		right: $width-chat;
+		width: auto;
+	}
+
+	#chat-wrap {
+		display: block;
+	}
+
+	#danmaku-position {
+		right: $width-chat;
+		width: auto;
+	}
+
+	// 隱藏聊天室
+	@at-root &.nochat {
+		#stream-wrap {
+			right: 0;
+			width: 100%;
+		}
+
+		#chat-wrap {
+			display: none;
+		}
+
+		#danmaku-position {
+			right: 0;
+			width: 100%;
 		}
 	}
 }

@@ -1,4 +1,3 @@
-/* global CommentManager */
 import './sass/index.scss';
 
 import $ from 'jquery';
@@ -14,13 +13,14 @@ import * as colors from './utils/colors';
 import { loadSubscriberBadges, loadGlobalBadges } from './badges';
 import { get as getCheers } from './cheers';
 import { getChannel } from './twitchApi';
+import boolish from './utils/boolish';
+import createWatchParams from './createWatchParams';
 
 $(() => {
   /**
    * parameters
    *
    * @param {string}  channel     channel id
-   * @param {boolean} showstream  show embedded stream
    * @param {boolean} shownick    show nick before message or not (default: "false")
    * @param {string}  highlight   which part will colors be applied "nick" or "message" (default: "nick")
    *                              only works when shownick is activated
@@ -30,62 +30,70 @@ $(() => {
    *                              see https://github.com/weizhenye/Danmaku#speed for more information
    * @param {boolean} reverse     reverse danmaku's vertical position
    */
-  const params = Object.assign({}, {
-    theme: 'dark',
-    highlight: 'nick'
-  }, parseQuery(location.search));
+  const params = createWatchParams(parseQuery(location.search));
+  const boolParam = boolish(() => params.get());
 
-  const boolParam = (name) => {
-    if (params[name] && (
-          params[name] === 'true' ||
-          params[name] === '1'
-        )
-      ) {
-      return true;
-    }
-    return false;
-  };
-
-  if (!params.channel) {
-    const q = makeQuery(Object.assign(params, {
-      channel: 'miao11255',
-      showstream: 1
+  if (!params.get('channel')) {
+    const q = makeQuery(Object.assign(params.get(), {
+      channel: 'miao11255'
     }));
     window.location.href = `?${q}`;
     return;
   }
 
-  if (boolParam('showstream')) {
-    const $stream = $('#stream');
-    $stream.attr('src', $stream.data('src').replace('{CHANNEL}', params.channel));
-    $stream.show();
+  const channel = params.get('channel');
+  const $body = $('body');
+
+  if (/\/watch(:?\/|\.html)?$/.test(window.location.pathname)) {
+    params.set('showstream', 1);
+    $body.addClass('watch');
   }
 
-  if (boolParam('showbadges')) {
+  /**
+   * Static setup
+   */
+  {
+    if (boolParam('showstream')) {
+      $('#stream, #chat').each(function () {
+        const $this = $(this);
+        $this.attr('src', $this.data('src').replace('{CHANNEL}', channel));
+      });
+      $body.addClass('showstream');
+    }
+
     loadGlobalBadges();
-    loadSubscriberBadges(params.channel);
+    loadSubscriberBadges(channel);
+
+    /**
+     * update title
+     */
+    getChannel(channel)
+    .then((c) => {
+      const name = c.display_name || c.name;
+      document.title = `${name} @ ttv-danmaku`;
+    });
   }
 
-  const cheersPromise = getCheers(params.channel);
+  const cheersPromise = getCheers(channel);
 
   /**
    * Danmaku
-   * @type {Danmaku}
    */
   const danmaku = new Danmaku();
   danmaku.init({
     container: document.getElementById('danmaku-container'),
-    speed: params.speed ? Number(params.speed) : 100,
+    speed: params.get('speed'),
     reverse: boolParam('reverse')
   });
   $(window).on('resize', debounce(() => danmaku.resize(), 100));
+  // TODO: 在調整 nochat 的時候要觸發 danmaku.resize()
 
   /**
    * Socket
    */
   const socket = createSocketEmitter({
     nick: 'justinfan12345',
-    channel: params.channel
+    channel: channel
   });
   const handleMsg = (cheers, nick, rawTags, message) => {
     const tags = parseTags(nick, rawTags);
@@ -102,8 +110,8 @@ $(() => {
       });
     }
 
-    if (params.theme) {
-      const bgTheme = params.theme;
+    if (params.get('theme')) {
+      const bgTheme = params.get('theme');
 
       if(/^#[0-9a-f]+$/i.test(tags.color)) {
         while(colors.calcBgTheme(tags.color) !== bgTheme) {
@@ -133,7 +141,7 @@ $(() => {
 
       let text = `${linePrepend}<span class="nick" style="color: ${tags.color};">${tags.displayName || nick}:</span> <span class="message">${message}</span>`;
 
-      if (params.highlight && params.highlight === 'message') {
+      if (params.get('highlight') === 'message') {
         text = `${linePrepend}<span class="nick">${tags.displayName || nick}:</span> <span class="message" style="color: ${tags.color};">${message}</span>`
       }
 
@@ -167,25 +175,40 @@ $(() => {
   });
 
   /**
-   * add <body> classes
+   * Dynamic setup
    */
-  const $body = $('body');
-  if (params.theme) {
-    $body.addClass(`theme-${params.theme}`);
-  }
-  if (params.highlight) {
-    $body.addClass(`highlight-${params.highlight}`);
-  }
-  if (boolParam('showstream')) {
-    $body.addClass(`showstream`);
+  {
+    const updateThemeClass = (theme) => {
+      $body
+      .removeClass('theme-dark theme-light')
+      .addClass(`theme-${theme}`);
+    };
+    const updateHighlightClass = (highlight) => {
+      $body
+      .removeClass('highlight-nick highlight-message')
+      .addClass(`highlight-${highlight}`);
+    };
+
+    updateThemeClass(params.get('theme'));
+    updateHighlightClass(params.get('highlight'));
+
+    // watch params change
+    params.on('change', (changes) => {
+      changes.forEach(({ name, newValue, oldValue }) => {
+        switch (name) {
+          case 'theme':
+            updateThemeClass(newValue);
+            break;
+          case 'highlight':
+            updateHighlightClass(newValue);
+            break;
+          case 'reverse':
+            danmaku.reverse = !!newValue;
+            break;
+        }
+      });
+    });
   }
 
-  /**
-   * update title
-   */
-  getChannel(params.channel)
-  .then((c) => {
-    const name = c.display_name || c.name;
-    document.title = `${name} @ ttv-danmaku`;
-  });
+  window.params = params;  // xxx
 });
