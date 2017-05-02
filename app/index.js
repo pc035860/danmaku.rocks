@@ -37,11 +37,7 @@ const rdrToDefaultChannel = () => {
 /**
  * try to obtain channel from rewrite path
  */
-const getWatchChannel = (paramChannel) => {
-  if (paramChannel) {
-    return paramChannel;
-  }
-
+const getPathChannel = () => {
   const buf = location.pathname.split('/');
   const l = buf.length;
 
@@ -250,12 +246,21 @@ $(() => {
     channel: 'c'  // alias
   });
 
+  const paramChannel = params.get('channel');
+  const pathChannel = getPathChannel();
+
   // the most important parameter
-  const channel = getWatchChannel(params.get('channel'));
+  const channel = paramChannel || pathChannel;
 
   if (!channel) {
     rdrToDefaultChannel();
     return;
+  }
+
+  const isUsingPathChannel = !paramChannel;
+
+  if (isUsingPathChannel) {
+    params.set('showstream', 1);
   }
 
   getChannel(channel).then((channelOwner) => {
