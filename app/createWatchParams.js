@@ -7,7 +7,8 @@ const defaultParams = {
   theme: 'dark',
   speed: 100,
   reverse: 0,
-  showstream: 0
+  showstream: 0,
+  rect: '0,100'
 };
 
 export default function createWatchParams(initParams = {}, alias = {}) {

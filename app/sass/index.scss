@@ -60,9 +60,9 @@ body {
 #danmaku-position {
 	box-sizing: border-box;
 
-	position: fixed; z-index: $max-z-index;
-	left: 0; right: 0;
-	top: 0; bottom: 0;
+	position: absolute; z-index: $max-z-index;
+	left: 50%;
+	top: 50%;
 	width: 100%;
 	height: 100%;
 
@@ -72,11 +72,14 @@ body {
 
 	padding: 5px 0;
 	pointer-events: none;
+	// border: 1px solid red;
 }
 
 #danmaku-container {
+	position: absolute;
+	left: 0; right: 0;
+	top: 0; bottom: 0;
 	width: 100%;
-	height: 100%;
 
 	> div > div {
 		$color-light: #333;

@@ -82,13 +82,18 @@ gulp.task('copy-public', ['hash-bundle'], function () {
 
 gulp.task('update-index', ['copy'], function () {
   var assets = require(path.join(myPath.dist, 'assets.json'));
-  return gulp.src(path.join(myPath.dist, 'index.html'))
+
+  var stream = gulp.src(path.join(myPath.dist, 'index.html'))
   .pipe(replace('bundle.js', assets['bundle.js']))
-  .pipe(gulp.dest(myPath.dist))
-  .pipe(rename('watch.html'))  // make a copy - watch.html
-  .pipe(gulp.dest(myPath.dist))
-  .pipe(rename('404.html'))  // make a copy - 404.html
   .pipe(gulp.dest(myPath.dist));
+
+  // make copies
+  ['watch.html', '404.html', 'overlay.html'].forEach(function (name) {
+    stream = stream.pipe(rename(name))
+                   .pipe(gulp.dest(myPath.dist));
+  });
+
+  return stream;
 });
 
 // gulp.task('generate-service-worker', ['update-index'], function (callback) {

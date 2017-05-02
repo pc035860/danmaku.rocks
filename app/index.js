@@ -2,7 +2,6 @@ import './sass/index.scss';
 
 import $ from 'jquery';
 import Danmaku from '_Danmaku';
-import debounce from 'lodash/debounce';
 import raf from 'raf';
 import { parse as parseQuery, stringify as makeQuery } from 'query-string';
 
@@ -15,6 +14,7 @@ import { get as getCheers } from './cheers';
 import { getChannel } from './twitchApi';
 import boolish from './utils/boolish';
 import createWatchParams from './createWatchParams';
+import createDanmakuRectHandler from './createDanmakuRectHandler';
 
 import { siteName as SITE_NAME } from './config';
 
@@ -35,6 +35,20 @@ const rdrToDefaultChannel = () => {
   }));
   location.href = `?${q}`;
 };
+
+const byFrame = (() => {
+  let animating = false;
+  return (fn) => {
+    return raf(() => {
+      if (animating) {
+        return;
+      }
+      animating = true;
+      fn();
+      animating = false;
+    });
+  };
+})();
 
 /**
  * try to obtain channel from rewrite path
@@ -90,12 +104,19 @@ const onChannelFetched = (owner, params) => {
    * Danmaku
    */
   const danmaku = new Danmaku();
+  const handleDanmakuRect = createDanmakuRectHandler($('#danmaku-position'), $('#stream-wrap'));
   danmaku.init({
     container: document.getElementById('danmaku-container'),
     speed: params.get('speed'),
     reverse: boolParam('reverse')
   });
-  $(window).on('resize', debounce(() => danmaku.resize(), 100));
+  const danmakuReisze = () => {
+    handleDanmakuRect($body.hasClass('stream-fullscreen'));
+    danmaku.resize();
+  };
+  $(window).on('resize', () => {
+    byFrame(danmakuReisze);
+  });
   $(document).on(EVT_FULLSCREEN, ($evt) => {
     if (isElementFullscreen()) {
       const isStreamIframe = $evt.target.id === 'stream';
@@ -104,8 +125,9 @@ const onChannelFetched = (owner, params) => {
     else {
       $body.removeClass('stream-fullscreen');
     }
-    danmaku.resize();
+    danmakuReisze();
   });
+  danmakuReisze();
   // TODO: 在調整 nochat 的時候要觸發 danmaku.resize()
 
   /**
@@ -208,9 +230,20 @@ const onChannelFetched = (owner, params) => {
       .removeClass('highlight-nick highlight-message')
       .addClass(`highlight-${highlight}`);
     };
+    const parseRect = (rect) => {
+      return rect.split(',').map(v => Number(v));
+    };
+    const setDanmakuRect = (fromP, toP) => {
+      $('#danmaku-container').css({
+        top: `${fromP}%`,
+        bottom: `${100 - toP}%`
+      });
+      danmaku.resize();
+    };
 
     updateThemeClass(params.get('theme'));
     updateHighlightClass(params.get('highlight'));
+    setDanmakuRect(...parseRect(params.get('rect')));
 
     // watch params change
     params.on('change', (changes) => {
@@ -224,6 +257,9 @@ const onChannelFetched = (owner, params) => {
             break;
           case 'reverse':
             danmaku.reverse = !!newValue;
+            break;
+          case 'rect':
+            setDanmakuRect(...parseRect(newValue));
             break;
         }
       });
