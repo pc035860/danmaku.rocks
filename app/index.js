@@ -52,6 +52,7 @@ const onChannelFetched = (owner, params) => {
   const $body = $('body');
 
   if (/\/watch(:?\/|\.html)?$/.test(location.pathname)) {
+    // watch mode
     params.set('showstream', 1);
     $body.addClass('watch');
   }
@@ -260,7 +261,9 @@ $(() => {
   const isUsingPathChannel = !paramChannel;
 
   if (isUsingPathChannel) {
+    // watch mode
     params.set('showstream', 1);
+    $('body').addClass('watch');
   }
 
   getChannel(channel).then((channelOwner) => {
