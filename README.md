@@ -1,8 +1,16 @@
-# ttv-danmaku
+# DanmakuRocks
 
-Twitch danmaku layer service.
+Twitch danmaku player & overlay service.
 
-https://pc035860.github.io/ttv-danmaku/?showstream=1&channel={CHANNEL}
+### Player
+
+https://danmaku.rocks/{CHANNEL}
+
+### Overlay
+
+Can be used in OBS BrowserSource.
+
+https://danmaku.rocks/overlay?channel={CHANNEL}
 
 ## Install
 
