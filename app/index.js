@@ -16,6 +16,8 @@ import { getChannel } from './twitchApi';
 import boolish from './utils/boolish';
 import createWatchParams from './createWatchParams';
 
+import { siteName as SITE_NAME } from './config';
+
 const EVT_FULLSCREEN = 'fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange';
 const DEFAULT_CHANNEL = 'miao11255';
 
@@ -78,7 +80,7 @@ const onChannelFetched = (owner, params) => {
     getChannel(channel)
     .then((c) => {
       const name = c.display_name || c.name;
-      document.title = `${name} @ ttv-danmaku`;
+      document.title = `${name} - ${SITE_NAME}`;
     });
   }
 
