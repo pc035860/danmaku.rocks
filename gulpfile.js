@@ -16,7 +16,10 @@ var myPath = {
 };
 
 gulp.task('clean', function () {
-  return gulp.src(myPath.dist).pipe(clean());
+  return gulp.src([
+    path.join(myPath.dist, '*'),
+    '!' + path.join(myPath.dist, 'CNAME'),  // dont't clean CNAME
+  ]).pipe(clean());
 });
 
 gulp.task('clean-dist', ['update-index'], function () {
