@@ -24,12 +24,11 @@ body {
 }
 
 #stream {
+	display: none;
 	position: relative;
 	height: 100%;
 }
 #stream-wrap {
-	display: none;
-
 	position: fixed; z-index: 0;
 	left: 0; right: 0;
 	top: 0; bottom: 0;
@@ -139,10 +138,12 @@ body {
 // 觀賞模式
 .showstream.watch {
 	#stream-wrap {
-		display: block;
-
 		right: $width-chat;
 		width: auto;
+	}
+
+	#stream {
+		display: block;
 	}
 
 	#chat-wrap {
