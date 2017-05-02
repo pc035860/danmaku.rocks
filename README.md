@@ -1,4 +1,4 @@
-# DanmakuRocks
+# danmaku.rocks
 
 Twitch danmaku player & overlay service.
 
