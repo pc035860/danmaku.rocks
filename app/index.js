@@ -17,6 +17,7 @@ import boolish from './utils/boolish';
 import createWatchParams from './createWatchParams';
 
 const EVT_FULLSCREEN = 'fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange';
+const DEFAULT_CHANNEL = 'miao11255';
 
 const isElementFullscreen = () => {
   return !!(document.fullscreenElement ||
@@ -25,37 +26,36 @@ const isElementFullscreen = () => {
             document.msFullscreenElement);
 };
 
-$(() => {
-  /**
-   * parameters
-   *
-   * @param {string}  channel     channel id
-   * @param {boolean} shownick    show nick before message or not (default: "false")
-   * @param {string}  highlight   which part will colors be applied "nick" or "message" (default: "nick")
-   *                              only works when shownick is activated
-   * @param {boolean} showbadges  show badges before message or not (default: "false")
-   * @param {string}  theme       target background theme "dark" or "light" (default: "light")
-   * @param {string}  speed       danmaku speed (default: 100)
-   *                              see https://github.com/weizhenye/Danmaku#speed for more information
-   * @param {boolean} reverse     reverse danmaku's vertical position
-   */
-  const params = createWatchParams(parseQuery(location.search), {
-    channel: 'c'  // alias
-  });
-  const boolParam = boolish(() => params.get());
+const rdrToDefaultChannel = () => {
+  const params = parseQuery(location.search);
+  const q = makeQuery(Object.assign(params, {
+    c: DEFAULT_CHANNEL
+  }));
+  location.href = `?${q}`;
+};
 
-  if (!params.get('channel')) {
-    const q = makeQuery(Object.assign(params.get(), {
-      channel: 'miao11255'
-    }));
-    window.location.href = `?${q}`;
-    return;
+/**
+ * try to obtain channel from rewrite path
+ */
+const getWatchChannel = (paramChannel) => {
+  if (paramChannel) {
+    return paramChannel;
   }
 
-  const channel = params.get('channel');
+  const buf = location.pathname.split('/');
+  const l = buf.length;
+
+  // /{channel} || /{channel}/
+  return buf[l - 1] || buf[l - 2];
+};
+
+const onChannelFetched = (owner, params) => {
+  const boolParam = boolish(() => params.get());
+
+  const channel = owner.name;
   const $body = $('body');
 
-  if (/\/watch(:?\/|\.html)?$/.test(window.location.pathname)) {
+  if (/\/watch(:?\/|\.html)?$/.test(location.pathname)) {
     params.set('showstream', 1);
     $body.addClass('watch');
   }
@@ -230,6 +230,41 @@ $(() => {
       });
     });
   }
+};
 
-  window.params = params;  // xxx
+$(() => {
+  /**
+   * parameters
+   *
+   * @param {string}  channel     channel id
+   * @param {boolean} shownick    show nick before message or not (default: "false")
+   * @param {string}  highlight   which part will colors be applied "nick" or "message" (default: "nick")
+   *                              only works when shownick is activated
+   * @param {boolean} showbadges  show badges before message or not (default: "false")
+   * @param {string}  theme       target background theme "dark" or "light" (default: "light")
+   * @param {string}  speed       danmaku speed (default: 100)
+   *                              see https://github.com/weizhenye/Danmaku#speed for more information
+   * @param {boolean} reverse     reverse danmaku's vertical position
+   */
+  const params = createWatchParams(parseQuery(location.search), {
+    channel: 'c'  // alias
+  });
+
+  // the most important parameter
+  const channel = getWatchChannel(params.get('channel'));
+
+  if (!channel) {
+    rdrToDefaultChannel();
+    return;
+  }
+
+  getChannel(channel).then((channelOwner) => {
+    if (!channelOwner) {
+      rdrToDefaultChannel();
+      return;
+    }
+    onChannelFetched(channelOwner, params);
+  }, () => {
+    rdrToDefaultChannel();
+  });
 });

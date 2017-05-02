@@ -86,6 +86,8 @@ gulp.task('update-index', ['copy'], function () {
   .pipe(replace('bundle.js', assets['bundle.js']))
   .pipe(gulp.dest(myPath.dist))
   .pipe(rename('watch.html'))  // make a copy - watch.html
+  .pipe(gulp.dest(myPath.dist))
+  .pipe(rename('404.html'))  // make a copy - 404.html
   .pipe(gulp.dest(myPath.dist));
 });
 
