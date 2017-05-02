@@ -10,7 +10,7 @@ https://danmaku.rocks/{CHANNEL}
 
 Can be used in OBS BrowserSource.
 
-https://danmaku.rocks/overlay?channel={CHANNEL}
+https://danmaku.rocks/overlay/{CHANNEL}
 
 ## Install
 

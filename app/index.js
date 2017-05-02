@@ -21,6 +21,10 @@ import { siteName as SITE_NAME } from './config';
 const EVT_FULLSCREEN = 'fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange';
 const DEFAULT_CHANNEL = 'miao11255';
 
+const isOverlay = () => {
+  return /\/overlay/.test(location.pathname);
+};
+
 const isElementFullscreen = () => {
   return !!(document.fullscreenElement ||
             document.mozFullScreenElement ||
@@ -67,7 +71,8 @@ const onChannelFetched = (owner, params) => {
   const channel = owner.name;
   const $body = $('body');
 
-  if (/\/watch(:?\/|\.html)?$/.test(location.pathname)) {
+  if (/\/watch(:?\/|\.html)?$/.test(location.pathname) &&
+      !isOverlay()) {
     // watch mode
     params.set('showstream', 1);
     $body.addClass('watch');
@@ -297,8 +302,9 @@ $(() => {
   }
 
   const isUsingPathChannel = !paramChannel;
+  const isWatchMode = isUsingPathChannel && !isOverlay();
 
-  if (isUsingPathChannel) {
+  if (isWatchMode) {
     // watch mode
     params.set('showstream', 1);
     $('body').addClass('watch');
