@@ -47,7 +47,7 @@ export const findCheerInToken = (cheers, token) => {
   const tokenLower = token.toLowerCase();
   for (let i = 0; i < cheerPrefixes.length; i++) {
     const prefixLower = cheerPrefixes[i].toLowerCase();
-    if (tokenLower.startsWith(prefixLower)) {
+    if (tokenLower.indexOf(prefixLower) === 0) {
       const amount = parseInt(tokenLower.substr(prefixLower.length), 10);
       return getCheer(cheers, cheerPrefixes[i], amount);
     }
