@@ -8,6 +8,7 @@ const defaultParams = {
   speed: 100,
   reverse: 0,
   showstream: 0,
+  nochat: 0,
   rect: '0,100'
 };
 

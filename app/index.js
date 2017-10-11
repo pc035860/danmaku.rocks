@@ -65,6 +65,11 @@ const getPathChannel = () => {
   return buf[l - 1] || buf[l - 2];
 };
 
+const putIframeSrc = (elm, channel) => {
+  const $elm = $(elm);
+  $elm.attr('src', $elm.data('src').replace('{CHANNEL}', channel));
+};
+
 const onChannelFetched = (owner, params) => {
   const boolParam = boolish(() => params.get());
 
@@ -83,11 +88,13 @@ const onChannelFetched = (owner, params) => {
    */
   {
     if (boolParam('showstream')) {
-      $('#stream, #chat').each(function () {
-        const $this = $(this);
-        $this.attr('src', $this.data('src').replace('{CHANNEL}', channel));
-      });
+      const nochat = boolParam('nochat');
+      putIframeSrc('#stream', channel);
+      if (!nochat) {
+        putIframeSrc('#chat', channel);
+      }
       $body.addClass('showstream');
+      $body.toggleClass('no-chat', nochat);
     }
 
     loadGlobalBadges();
@@ -284,7 +291,10 @@ $(() => {
    * @param {string}  theme       target background theme "dark" or "light" (default: "light")
    * @param {string}  speed       danmaku speed (default: 100)
    *                              see https://github.com/weizhenye/Danmaku#speed for more information
-   * @param {boolean} reverse     reverse danmaku's vertical position
+   * @param {boolean} reverse     reverse danmaku's vertical position (default: "false")
+   * @param {string}  rect        danmaku's display rect (default: 0,100)
+   *
+   * @param {boolean} nochat      do not load chat in the first place (default: "false")
    */
   const params = createWatchParams(parseQuery(location.search), {
     channel: 'c'  // alias
