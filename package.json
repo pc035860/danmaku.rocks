@@ -52,5 +52,8 @@
   "bugs": {
     "url": "https://github.com/pc035860/fuse-box-jquery-seed/issues"
   },
-  "homepage": "https://github.com/pc035860/fuse-box-jquery-seed#readme"
+  "homepage": "https://github.com/pc035860/fuse-box-jquery-seed#readme",
+  "engines": {
+    "node": "^6.0.0"
+  }
 }
