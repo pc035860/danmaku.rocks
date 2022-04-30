@@ -9,7 +9,7 @@ import createSocketEmitter from './createSocketEmitter';
 import parseTags from './parseTags';
 import parseEmotes from './parseEmotes';
 import * as colors from './utils/colors';
-import { loadSubscriberBadges, loadGlobalBadges } from './badges';
+import { loadBadges } from './badges';
 import { get as getCheers } from './cheers';
 import { getChannel } from './twitchApi';
 import boolish from './utils/boolish';
@@ -18,31 +18,36 @@ import createDanmakuRectHandler from './createDanmakuRectHandler';
 
 import { siteName as SITE_NAME } from './config';
 
-const EVT_FULLSCREEN = 'fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange';
-const DEFAULT_CHANNEL = 'miao11255';
+const EVT_FULLSCREEN =
+  'fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange';
+const DEFAULT_CHANNEL = 'vtuber_inugamirin';
 
 const isOverlay = () => {
   return /\/overlay/.test(location.pathname);
 };
 
 const isElementFullscreen = () => {
-  return !!(document.fullscreenElement ||
-            document.mozFullScreenElement ||
-            document.webkitFullscreenElement ||
-            document.msFullscreenElement);
+  return !!(
+    document.fullscreenElement ||
+    document.mozFullScreenElement ||
+    document.webkitFullscreenElement ||
+    document.msFullscreenElement
+  );
 };
 
 const rdrToDefaultChannel = () => {
   const params = parseQuery(location.search);
-  const q = makeQuery(Object.assign(params, {
-    c: DEFAULT_CHANNEL
-  }));
+  const q = makeQuery(
+    Object.assign(params, {
+      c: DEFAULT_CHANNEL,
+    })
+  );
   location.href = `?${q}`;
 };
 
 const byFrame = (() => {
   let animating = false;
-  return (fn) => {
+  return fn => {
     return raf(() => {
       if (animating) {
         return;
@@ -67,7 +72,14 @@ const getPathChannel = () => {
 
 const putIframeSrc = (elm, channel) => {
   const $elm = $(elm);
-  $elm.attr('src', $elm.data('src').replace('{CHANNEL}', channel));
+
+  // 拿 host 去掉 port
+  const domain = location.host.split(':')[0];
+  const src = $elm
+    .data('src')
+    .replace('{CHANNEL}', channel)
+    .replace('{PARENT}', domain);
+  $elm.attr('src', src);
 };
 
 const onChannelFetched = (owner, params) => {
@@ -76,8 +88,7 @@ const onChannelFetched = (owner, params) => {
   const channel = owner.name;
   const $body = $('body');
 
-  if (/\/watch(:?\/|\.html)?$/.test(location.pathname) &&
-      !isOverlay()) {
+  if (/\/watch(:?\/|\.html)?$/.test(location.pathname) && !isOverlay()) {
     // watch mode
     params.set('showstream', 1);
     $body.addClass('watch');
@@ -97,14 +108,12 @@ const onChannelFetched = (owner, params) => {
       $body.toggleClass('no-chat', nochat);
     }
 
-    loadGlobalBadges();
-    loadSubscriberBadges(channel);
+    loadBadges(channel);
 
     /**
      * update title
      */
-    getChannel(channel)
-    .then((c) => {
+    getChannel(channel).then(c => {
       const name = c.display_name || c.name;
       document.title = `${name} - ${SITE_NAME}`;
     });
@@ -116,11 +125,14 @@ const onChannelFetched = (owner, params) => {
    * Danmaku
    */
   const danmaku = new Danmaku();
-  const handleDanmakuRect = createDanmakuRectHandler($('#danmaku-position'), $('#stream-wrap'));
+  const handleDanmakuRect = createDanmakuRectHandler(
+    $('#danmaku-position'),
+    $('#stream-wrap')
+  );
   danmaku.init({
     container: document.getElementById('danmaku-container'),
     speed: params.get('speed'),
-    reverse: boolParam('reverse')
+    reverse: boolParam('reverse'),
   });
   const danmakuReisze = () => {
     handleDanmakuRect($body.hasClass('stream-fullscreen'));
@@ -129,12 +141,11 @@ const onChannelFetched = (owner, params) => {
   $(window).on('resize', () => {
     byFrame(danmakuReisze);
   });
-  $(document).on(EVT_FULLSCREEN, ($evt) => {
+  $(document).on(EVT_FULLSCREEN, $evt => {
     if (isElementFullscreen()) {
       const isStreamIframe = $evt.target.id === 'stream';
       $body.toggleClass('stream-fullscreen', isStreamIframe);
-    }
-    else {
+    } else {
       $body.removeClass('stream-fullscreen');
     }
     danmakuReisze();
@@ -147,7 +158,7 @@ const onChannelFetched = (owner, params) => {
    */
   const socket = createSocketEmitter({
     nick: 'justinfan12345',
-    channel: channel
+    channel: channel,
   });
   const handleMsg = (cheers, nick, rawTags, message) => {
     const tags = parseTags(nick, rawTags);
@@ -155,10 +166,10 @@ const onChannelFetched = (owner, params) => {
     // console.info('$msg', nick, tags.color, message);
 
     let action = false;
-    let linePrepend = '';  // message text line
+    let linePrepend = ''; // message text line
 
-    if(boolParam('showbadges') && tags.badges) {
-      tags.badges.forEach(function(badge) {
+    if (boolParam('showbadges') && tags.badges) {
+      tags.badges.forEach(function (badge) {
         const badgeClass = `${badge.type}-${badge.version}`;
         linePrepend += `<span class="${badgeClass} tag">&nbsp;</span>`;
       });
@@ -167,17 +178,23 @@ const onChannelFetched = (owner, params) => {
     if (params.get('theme')) {
       const bgTheme = params.get('theme');
 
-      if(/^#[0-9a-f]+$/i.test(tags.color)) {
-        while(colors.calcBgTheme(tags.color) !== bgTheme) {
-          tags.color = colors.calcReplacement(tags.color, colors.calcBgTheme(tags.color));
+      if (/^#[0-9a-f]+$/i.test(tags.color)) {
+        while (colors.calcBgTheme(tags.color) !== bgTheme) {
+          tags.color = colors.calcReplacement(
+            tags.color,
+            colors.calcBgTheme(tags.color)
+          );
         }
       }
     }
 
-    if(/^\x01ACTION.*\x01$/.test(message)) {
+    if (/^\x01ACTION.*\x01$/.test(message)) {
       // action
       action = true;
-      message = message.replace(/^\x01ACTION/, '').replace(/\x01$/, '').trim();
+      message = message
+        .replace(/^\x01ACTION/, '')
+        .replace(/\x01$/, '')
+        .trim();
     }
 
     message = parseEmotes(cheers, message, tags);
@@ -187,34 +204,40 @@ const onChannelFetched = (owner, params) => {
       danmaku.emit({
         html: true,
         text: `${linePrepend}<span class="action" style="color: ${tags.color};">${message}</span>`,
-        mode: 'bottom'
+        mode: 'bottom',
       });
-    }
-    else if (boolParam('shownick')) {
+    } else if (boolParam('shownick')) {
       // show nick
 
-      let text = `${linePrepend}<span class="nick" style="color: ${tags.color};">${tags.displayName || nick}:</span> <span class="message">${message}</span>`;
+      let text = `${linePrepend}<span class="nick" style="color: ${
+        tags.color
+      };">${
+        tags.displayName || nick
+      }:</span> <span class="message">${message}</span>`;
 
       if (params.get('highlight') === 'message') {
-        text = `${linePrepend}<span class="nick">${tags.displayName || nick}:</span> <span class="message" style="color: ${tags.color};">${message}</span>`
+        text = `${linePrepend}<span class="nick">${
+          tags.displayName || nick
+        }:</span> <span class="message" style="color: ${
+          tags.color
+        };">${message}</span>`;
       }
 
       danmaku.emit({
         html: true,
-        text
+        text,
       });
-    }
-    else {
+    } else {
       // default
       danmaku.emit({
         html: true,
-        text: `${linePrepend}<span class="message" style="color: ${tags.color};">${message}</span>`
+        text: `${linePrepend}<span class="message" style="color: ${tags.color};">${message}</span>`,
       });
     }
   };
   socket.on('$msg', (nick, rawTags, message) => {
     const perfNow = window.performance.now();
-    cheersPromise.then((cheers) => {
+    cheersPromise.then(cheers => {
       // skip comments user might not see (page is not visible)
       raf(tickNow => {
         const visibilityDiff = (tickNow - perfNow) / 1000;
@@ -232,23 +255,21 @@ const onChannelFetched = (owner, params) => {
    * Dynamic setup
    */
   {
-    const updateThemeClass = (theme) => {
-      $body
-      .removeClass('theme-dark theme-light')
-      .addClass(`theme-${theme}`);
+    const updateThemeClass = theme => {
+      $body.removeClass('theme-dark theme-light').addClass(`theme-${theme}`);
     };
-    const updateHighlightClass = (highlight) => {
+    const updateHighlightClass = highlight => {
       $body
-      .removeClass('highlight-nick highlight-message')
-      .addClass(`highlight-${highlight}`);
+        .removeClass('highlight-nick highlight-message')
+        .addClass(`highlight-${highlight}`);
     };
-    const parseRect = (rect) => {
+    const parseRect = rect => {
       return rect.split(',').map(v => Number(v));
     };
     const setDanmakuRect = (fromP, toP) => {
       $('#danmaku-container').css({
         top: `${fromP}%`,
-        bottom: `${100 - toP}%`
+        bottom: `${100 - toP}%`,
       });
       danmaku.resize();
     };
@@ -258,7 +279,7 @@ const onChannelFetched = (owner, params) => {
     setDanmakuRect(...parseRect(params.get('rect')));
 
     // watch params change
-    params.on('change', (changes) => {
+    params.on('change', changes => {
       changes.forEach(({ name, newValue, oldValue }) => {
         switch (name) {
           case 'theme':
@@ -288,7 +309,7 @@ $(() => {
    * @param {string}  highlight   which part will colors be applied "nick" or "message" (default: "nick")
    *                              only works when shownick is activated
    * @param {boolean} showbadges  show badges before message or not (default: "false")
-   * @param {string}  theme       target background theme "dark" or "light" (default: "light")
+   * @param {string}  theme       target background theme "dark" or "light" (default: "dark")
    * @param {string}  speed       danmaku speed (default: 100)
    *                              see https://github.com/weizhenye/Danmaku#speed for more information
    * @param {boolean} reverse     reverse danmaku's vertical position (default: "false")
@@ -297,7 +318,7 @@ $(() => {
    * @param {boolean} nochat      do not load chat in the first place (default: "false")
    */
   const params = createWatchParams(parseQuery(location.search), {
-    channel: 'c'  // alias
+    channel: 'c', // alias
   });
 
   const paramChannel = params.get('channel');
@@ -320,13 +341,16 @@ $(() => {
     $('body').addClass('watch');
   }
 
-  getChannel(channel).then((channelOwner) => {
-    if (!channelOwner) {
+  getChannel(channel).then(
+    channelOwner => {
+      if (!channelOwner) {
+        rdrToDefaultChannel();
+        return;
+      }
+      onChannelFetched(channelOwner, params);
+    },
+    () => {
       rdrToDefaultChannel();
-      return;
     }
-    onChannelFetched(channelOwner, params);
-  }, () => {
-    rdrToDefaultChannel();
-  });
+  );
 });
