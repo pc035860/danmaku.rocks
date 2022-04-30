@@ -1,31 +1,15 @@
 import $ from 'jquery';
-import { default as api, getChannelId } from './twitchApi';
+import { getCheermotes } from './twitchApi';
 
 let cheersCache = null;
-export const get = (channel) => {
+export const get = channel => {
   if (cheersCache) {
     return $.when(cheersCache);
   }
 
-  return getChannelId(channel)
-  .then((channelId) => {
-    return api(`https://api.twitch.tv/v5/bits/actions?channel_id=${channelId}`);
-  })
-  .then((res) => {
-    const cheers = {};
-    try {
-      res.actions.forEach((action) => {
-        const cheer = cheers[action.prefix] = {};
-        action.tiers.forEach((tier) => {
-          cheer[tier.min_bits] = tier.images.light.animated['4'];
-        });
-      });
-      cheersCache = cheers;
-    }
-    catch (e) {
-      console.warn(e);
-    }
-    return cheers;
+  return getCheermotes(channel).then(motesData => {
+    cheersCache = motesData;
+    return motesData;
   });
 };
 
@@ -33,12 +17,12 @@ export const getCheer = (cheers, prefix, amount) => {
   const amounts = cheers[prefix];
   return amounts[
     Object.keys(amounts)
-    .sort(function(a, b) {
-      return parseInt(b, 10) - parseInt(a, 10);
-    })
-    .find(function(a) {
-      return amount >= a;
-    })
+      .sort(function (a, b) {
+        return parseInt(b, 10) - parseInt(a, 10);
+      })
+      .find(function (a) {
+        return amount >= a;
+      })
   ];
 };
 
