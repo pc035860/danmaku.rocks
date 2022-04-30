@@ -1793,9 +1793,10 @@ function-bind@^1.0.2, function-bind@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.0.tgz#16176714c801798e4e8f2cf7f7529467bb4a5771"
 
-fuse-box@^1.3.128:
+fuse-box@^1.3.129:
   version "1.3.131"
   resolved "https://registry.yarnpkg.com/fuse-box/-/fuse-box-1.3.131.tgz#8325ae47236139aad6b2cbe92a4a5fafea3063c6"
+  integrity sha1-gyWuRyNhOarWssvpKkpfr+owY8Y=
   dependencies:
     acorn "^4.0.3"
     acorn-es7 "^0.1.0"

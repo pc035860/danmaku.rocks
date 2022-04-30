@@ -4,11 +4,7 @@
   "description": "",
   "main": "app/index.js",
   "dependencies": {
-    "babel-core": "^6.24.0",
-    "babel-preset-es2015": "^6.24.0",
-    "babel-preset-stage-2": "^6.22.0",
     "event-emitter": "^0.3.5",
-    "fuse-box": "^1.3.128",
     "lodash": "^4.17.4",
     "punycode": "~1.4.0",
     "query-string": "^4.3.4",
@@ -16,6 +12,9 @@
     "uglify-js": "^2.8.16"
   },
   "devDependencies": {
+    "babel-core": "^6.24.0",
+    "babel-preset-es2015": "^6.24.0",
+    "babel-preset-stage-2": "^6.22.0",
     "autoprefixer": "^6.7.7",
     "cross-env": "^4.0.0",
     "eslint": "^3.18.0",
