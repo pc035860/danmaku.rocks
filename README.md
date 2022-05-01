@@ -14,7 +14,7 @@ https://danmaku.rocks/overlay/{CHANNEL}
 
 ### URL Parameters
 
-| 設定名稱   | 敘述                                               |
+| Name   | Description                                               |
 |------------|----------------------------------------------------|
 | shownick   | Show user nickname (value: `0` or `1`)           |
 | showbadges | Show user badges (value: `0` or `1`)             |
