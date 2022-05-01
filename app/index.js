@@ -23,6 +23,7 @@ import { siteName as SITE_NAME } from './config';
 const EVT_FULLSCREEN =
   'fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange';
 const DEFAULT_CHANNEL = 'vtuber_inugamirin';
+const GITHUB_REPO_URL = 'https://github.com/pc035860/danmaku.rocks';
 
 const isOverlay = () => {
   return /\/overlay/.test(location.pathname);
@@ -45,6 +46,10 @@ const rdrToDefaultChannel = () => {
     })
   );
   location.href = `?${q}`;
+};
+
+const rdrToGithubRepo = () => {
+  location.href = GITHUB_REPO_URL;
 };
 
 const byFrame = (() => {
@@ -330,7 +335,7 @@ $(() => {
   const channel = paramChannel || pathChannel;
 
   if (!channel) {
-    rdrToDefaultChannel();
+    rdrToGithubRepo();
     return;
   }
 
