@@ -360,7 +360,7 @@ $(() => {
       const eventParameters = params.get();
       gtag('event', eventName, {
         ...eventParameters,
-        channel: eventParameters.c,
+        channel: channel || eventParameters.c,
       });
     },
     () => {
