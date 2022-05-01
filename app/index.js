@@ -1,3 +1,5 @@
+/* global gtag */
+
 import './sass/index.scss';
 
 import $ from 'jquery';
@@ -348,6 +350,13 @@ $(() => {
         return;
       }
       onChannelFetched(channelOwner, params);
+
+      const eventName = isOverlay() ? 'mode_overlay' : 'mode_player';
+      const eventParameters = params.get();
+      gtag('event', eventName, {
+        ...eventParameters,
+        channel: eventParameters.c,
+      });
     },
     () => {
       rdrToDefaultChannel();
