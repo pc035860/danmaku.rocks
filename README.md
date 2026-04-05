@@ -65,10 +65,9 @@ git submodule update --init --recursive
 yarn install
 ```
 
-For YouTube SSE testing, also install proxy dependencies (assuming `nightdev-api-proxy` is cloned as a sibling directory):
+For YouTube SSE testing, also install dependencies in your local SSE proxy project:
 
 ```sh
-cd ../nightdev-api-proxy
 npm install
 ```
 
@@ -83,7 +82,6 @@ yarn start
 For YouTube mode (local), run proxy server in another terminal:
 
 ```sh
-cd ../nightdev-api-proxy
 BASE_PATH="" npm run server
 ```
 
