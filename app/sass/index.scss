@@ -10,6 +10,7 @@
 $max-z-index: 2147483647;
 $bg-theater: #17141f;
 $width-chat: 340px;
+$width-chat-youtube: 440px;
 $size-font: 2.2vh;
 $size-emote: 3.3vh;
 
@@ -165,5 +166,19 @@ body {
 	}
 	@at-root &.stream-fullscreen {
 		@extend %hide-chat;
+	}
+
+	&.provider-youtube {
+		#stream-wrap {
+			right: $width-chat-youtube;
+		}
+
+		#chat-wrap {
+			width: $width-chat-youtube;
+		}
+
+		#danmaku-position {
+			right: $width-chat-youtube;
+		}
 	}
 }

@@ -18,6 +18,7 @@ import { getChannel } from './twitchApi';
 import boolish from './utils/boolish';
 import createWatchParams from './createWatchParams';
 import createDanmakuRectHandler from './createDanmakuRectHandler';
+import { resolveYoutubeRoleColor } from './youtubeRoleColors';
 
 import { siteName as SITE_NAME } from './config';
 
@@ -92,6 +93,8 @@ const escapeHtml = message => {
 };
 
 const parseYoutubeTags = (nick, rawTags = {}) => {
+  const youtubeRole =
+    typeof rawTags.youtubeRole === 'string' ? rawTags.youtubeRole : 'default';
   return {
     name: nick,
     displayName: rawTags['display-name'] || nick,
@@ -100,6 +103,7 @@ const parseYoutubeTags = (nick, rawTags = {}) => {
     badges: [],
     badgeImages: Array.isArray(rawTags.badgeImages) ? rawTags.badgeImages : [],
     messageIsHtml: !!rawTags.messageIsHtml,
+    youtubeRole,
   };
 };
 
@@ -161,6 +165,7 @@ const onChannelFetched = (owner, params, provider = PROVIDER_TWITCH) => {
   const isYoutubeProvider = provider === PROVIDER_YOUTUBE;
   const channel = owner.name;
   const $body = $('body');
+  $body.toggleClass('provider-youtube', isYoutubeProvider);
 
   if (/\/watch(:?\/|\.html)?$/.test(location.pathname) && !isOverlay()) {
     // watch mode
@@ -247,7 +252,12 @@ const onChannelFetched = (owner, params, provider = PROVIDER_TWITCH) => {
       ? parseYoutubeTags(nick, rawTags)
       : parseTags(nick, rawTags);
 
-    // console.info('$msg', nick, tags.color, message);
+    if (isYoutubeProvider) {
+      tags.color = resolveYoutubeRoleColor(
+        tags.youtubeRole,
+        params.get('theme') || 'dark'
+      );
+    }
 
     let action = false;
     let linePrepend = ''; // message text line
@@ -277,7 +287,10 @@ const onChannelFetched = (owner, params, provider = PROVIDER_TWITCH) => {
     if (params.get('theme')) {
       const bgTheme = params.get('theme');
 
-      if (/^#[0-9a-f]+$/i.test(tags.color)) {
+      if (
+        !isYoutubeProvider &&
+        /^#[0-9a-f]+$/i.test(tags.color)
+      ) {
         while (colors.calcBgTheme(tags.color) !== bgTheme) {
           tags.color = colors.calcReplacement(
             tags.color,
@@ -308,20 +321,25 @@ const onChannelFetched = (owner, params, provider = PROVIDER_TWITCH) => {
         mode: 'bottom',
       });
     } else if (boolParam('shownick')) {
-      // show nick
-
-      let text = `${linePrepend}<span class="nick" style="color: ${
-        tags.color
-      };">${
-        tags.displayName || nick
-      }:</span> <span class="message">${message}</span>`;
-
-      if (params.get('highlight') === 'message') {
+      let text;
+      if (isYoutubeProvider) {
+        text = `${linePrepend}<span class="nick" style="color: ${
+          tags.color
+        };">${tags.displayName || nick}:</span> <span class="message" style="color: ${
+          tags.color
+        };">${message}</span>`;
+      } else if (params.get('highlight') === 'message') {
         text = `${linePrepend}<span class="nick">${
           tags.displayName || nick
         }:</span> <span class="message" style="color: ${
           tags.color
         };">${message}</span>`;
+      } else {
+        text = `${linePrepend}<span class="nick" style="color: ${
+          tags.color
+        };">${
+          tags.displayName || nick
+        }:</span> <span class="message">${message}</span>`;
       }
 
       danmaku.emit({
