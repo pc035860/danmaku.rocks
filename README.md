@@ -65,6 +65,8 @@ git submodule update --init --recursive
 yarn install
 ```
 
+Use Node.js 22 or newer (see `engines` in `package.json`).
+
 For YouTube SSE testing, also install dependencies in your local SSE proxy project:
 
 ```sh
@@ -76,7 +78,7 @@ npm install
 ```sh
 yarn start
 
-# then go to http://localhost:4444
+# then open the local URL printed in the terminal (Vite default: http://localhost:5173)
 ```
 
 For YouTube mode (local), run proxy server in another terminal:
@@ -88,16 +90,20 @@ BASE_PATH="" npm run server
 Then open:
 
 ```txt
-http://localhost:4444/watch.html?provider=youtube&v=AO8yfw84kh4&showstream=1&shownick=1&showbadges=1&ytproxy=http://localhost:3000
+http://localhost:5173/watch.html?provider=youtube&v=AO8yfw84kh4&showstream=1&shownick=1&showbadges=1&ytproxy=http://localhost:3000
 ```
+
+If Vite chose another port (for example when 5173 is busy), swap the host/port to match the dev server URL from your terminal.
 
 ### Deploy
 
 ```sh
-# deploy to docs/
-yarn dist
+# static output goes to docs/ (vite.config.js build.outDir)
+yarn build
 
-# github pages with docs/
+# optional: commit built assets for a static host that reads /docs from the repo
 git add -u docs/
 git push
 ```
+
+Pushes to `master` run `.github/workflows/pages.yml`: checkout with submodules, `yarn install --frozen-lockfile`, `yarn build`, then deploy the `docs/` artifact to GitHub Pages.
