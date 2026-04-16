@@ -117,6 +117,16 @@ const getProvider = params => {
   return PROVIDER_TWITCH;
 };
 
+const setFavicon = href => {
+  let link = document.querySelector('link[rel~="icon"]');
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.head.appendChild(link);
+  }
+  link.href = href;
+};
+
 const resolveBaseUrl = baseUrl => {
   if (/^https?:\/\//i.test(baseUrl)) {
     return baseUrl.replace(/\/$/, '');
@@ -455,6 +465,10 @@ $(() => {
   if (!channel) {
     rdrToGithubRepo();
     return;
+  }
+
+  if (isYoutubeProvider) {
+    setFavicon('./favicon-youtube.ico');
   }
 
   const isUsingPathChannel = !paramChannel && !isYoutubeProvider;
