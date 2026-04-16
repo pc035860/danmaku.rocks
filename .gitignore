@@ -1,5 +1,7 @@
-.fusebox
 node_modules
-
+.vite
+.fusebox
 public/bundle.js
 public/bundle.js.map
+
+docs/

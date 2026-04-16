@@ -1,6 +1,7 @@
 import ee from 'event-emitter';
 
 const defaultParams = {
+  provider: 'twitch',
   shownick: 0,
   highlight: 'nick',
   showbadges: 0,
@@ -9,7 +10,9 @@ const defaultParams = {
   reverse: 0,
   showstream: 0,
   nochat: 0,
-  rect: '0,100'
+  rect: '0,100',
+  video: '',
+  ytproxy: ''
 };
 
 export default function createWatchParams(initParams = {}, alias = {}) {

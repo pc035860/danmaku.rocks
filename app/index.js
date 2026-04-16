@@ -8,7 +8,8 @@ import raf from 'raf';
 import { parse as parseQuery, stringify as makeQuery } from 'query-string';
 
 import createSocketEmitter from './createSocketEmitter';
-import parseTags from './parseTags';
+import createYoutubeSseEmitter from './createYoutubeSseEmitter';
+import parseTags, { defaultColors } from './parseTags';
 import parseEmotes from './parseEmotes';
 import * as colors from './utils/colors';
 import { loadBadges } from './badges';
@@ -17,6 +18,7 @@ import { getChannel } from './twitchApi';
 import boolish from './utils/boolish';
 import createWatchParams from './createWatchParams';
 import createDanmakuRectHandler from './createDanmakuRectHandler';
+import { resolveYoutubeRoleColor } from './youtubeRoleColors';
 
 import { siteName as SITE_NAME } from './config';
 
@@ -24,6 +26,9 @@ const EVT_FULLSCREEN =
   'fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange';
 const DEFAULT_CHANNEL = 'vtuber_inugamirin';
 const GITHUB_REPO_URL = 'https://github.com/pc035860/danmaku.rocks';
+const PROVIDER_TWITCH = 'twitch';
+const PROVIDER_YOUTUBE = 'youtube';
+const DEFAULT_YOUTUBE_PROXY_BASE = 'https://cloud.pymaster.tw/ndapi';
 
 const isOverlay = () => {
   return /\/overlay/.test(location.pathname);
@@ -77,6 +82,71 @@ const getPathChannel = () => {
   return buf[l - 1] || buf[l - 2];
 };
 
+const escapeHtml = message => {
+  const text = String(message || '');
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
+const parseYoutubeTags = (nick, rawTags = {}) => {
+  const youtubeRole =
+    typeof rawTags.youtubeRole === 'string' ? rawTags.youtubeRole : 'default';
+  return {
+    name: nick,
+    displayName: rawTags['display-name'] || nick,
+    color: rawTags.color || defaultColors[nick.charCodeAt(0) % 15],
+    emotes: null,
+    badges: [],
+    badgeImages: Array.isArray(rawTags.badgeImages) ? rawTags.badgeImages : [],
+    messageIsHtml: !!rawTags.messageIsHtml,
+    youtubeRole,
+  };
+};
+
+const getProvider = params => {
+  const provider = String(
+    params.get('provider') || params.get('p') || PROVIDER_TWITCH
+  ).toLowerCase();
+  if (provider === PROVIDER_YOUTUBE) {
+    return PROVIDER_YOUTUBE;
+  }
+  return PROVIDER_TWITCH;
+};
+
+const resolveBaseUrl = baseUrl => {
+  if (/^https?:\/\//i.test(baseUrl)) {
+    return baseUrl.replace(/\/$/, '');
+  }
+  if (/^\//.test(baseUrl)) {
+    return `${location.origin}${baseUrl}`.replace(/\/$/, '');
+  }
+  return `${location.origin}/${baseUrl}`.replace(/\/$/, '');
+};
+
+const getYoutubeSseUrl = (videoId, params) => {
+  const proxyBase = params.get('ytproxy') || params.get('yp') || DEFAULT_YOUTUBE_PROXY_BASE;
+  const urlBase = resolveBaseUrl(proxyBase);
+  return `${urlBase}/youtube/${videoId}/events`;
+};
+
+const putYoutubeIframeSrc = (videoId, shouldLoadChat = true) => {
+  const domain = location.host.split(':')[0];
+  const streamSrc = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(
+    location.origin
+  )}`;
+  const chatSrc = `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${encodeURIComponent(domain)}`;
+  $('#stream').attr('src', streamSrc);
+  if (shouldLoadChat) {
+    $('#chat').attr('src', chatSrc);
+  } else {
+    $('#chat').attr('src', '');
+  }
+};
+
 const putIframeSrc = (elm, channel) => {
   const $elm = $(elm);
 
@@ -89,11 +159,13 @@ const putIframeSrc = (elm, channel) => {
   $elm.attr('src', src);
 };
 
-const onChannelFetched = (owner, params) => {
+const onChannelFetched = (owner, params, provider = PROVIDER_TWITCH) => {
   const boolParam = boolish(() => params.get());
 
+  const isYoutubeProvider = provider === PROVIDER_YOUTUBE;
   const channel = owner.name;
   const $body = $('body');
+  $body.toggleClass('provider-youtube', isYoutubeProvider);
 
   if (/\/watch(:?\/|\.html)?$/.test(location.pathname) && !isOverlay()) {
     // watch mode
@@ -107,26 +179,30 @@ const onChannelFetched = (owner, params) => {
   {
     if (boolParam('showstream')) {
       const nochat = boolParam('nochat');
-      putIframeSrc('#stream', channel);
-      if (!nochat) {
-        putIframeSrc('#chat', channel);
+      if (isYoutubeProvider) {
+        putYoutubeIframeSrc(channel, !nochat);
+      } else {
+        putIframeSrc('#stream', channel);
+        if (!nochat) {
+          putIframeSrc('#chat', channel);
+        }
       }
       $body.addClass('showstream');
       $body.toggleClass('no-chat', nochat);
     }
 
-    loadBadges(channel);
-
-    /**
-     * update title
-     */
-    getChannel(channel).then(c => {
-      const name = c.display_name || c.name;
-      document.title = `${name} - ${SITE_NAME}`;
-    });
+    if (!isYoutubeProvider) {
+      loadBadges(channel);
+      getChannel(channel).then(c => {
+        const name = c.display_name || c.name;
+        document.title = `${name} - ${SITE_NAME}`;
+      });
+    } else {
+      document.title = `${channel} - ${SITE_NAME}`;
+    }
   }
 
-  const cheersPromise = getCheers(channel);
+  const cheersPromise = isYoutubeProvider ? Promise.resolve({}) : getCheers(channel);
 
   /**
    * Danmaku
@@ -163,14 +239,25 @@ const onChannelFetched = (owner, params) => {
   /**
    * Socket
    */
-  const socket = createSocketEmitter({
-    nick: 'justinfan12345',
-    channel: channel,
-  });
+  const socket = isYoutubeProvider
+    ? createYoutubeSseEmitter({
+      sseUrl: getYoutubeSseUrl(channel, params),
+    })
+    : createSocketEmitter({
+      nick: 'justinfan12345',
+      channel: channel,
+    });
   const handleMsg = (cheers, nick, rawTags, message) => {
-    const tags = parseTags(nick, rawTags);
+    const tags = isYoutubeProvider
+      ? parseYoutubeTags(nick, rawTags)
+      : parseTags(nick, rawTags);
 
-    // console.info('$msg', nick, tags.color, message);
+    if (isYoutubeProvider) {
+      tags.color = resolveYoutubeRoleColor(
+        tags.youtubeRole,
+        params.get('theme') || 'dark'
+      );
+    }
 
     let action = false;
     let linePrepend = ''; // message text line
@@ -182,10 +269,28 @@ const onChannelFetched = (owner, params) => {
       });
     }
 
+    if (
+      boolParam('showbadges') &&
+      tags.badgeImages &&
+      Array.isArray(tags.badgeImages)
+    ) {
+      tags.badgeImages.forEach(badge => {
+        if (!badge || !badge.url) {
+          return;
+        }
+        linePrepend += `<img class="tag youtube-badge" src="${badge.url}" alt="${escapeHtml(
+          badge.label || ''
+        )}" />`;
+      });
+    }
+
     if (params.get('theme')) {
       const bgTheme = params.get('theme');
 
-      if (/^#[0-9a-f]+$/i.test(tags.color)) {
+      if (
+        !isYoutubeProvider &&
+        /^#[0-9a-f]+$/i.test(tags.color)
+      ) {
         while (colors.calcBgTheme(tags.color) !== bgTheme) {
           tags.color = colors.calcReplacement(
             tags.color,
@@ -204,7 +309,9 @@ const onChannelFetched = (owner, params) => {
         .trim();
     }
 
-    message = parseEmotes(cheers, message, tags);
+    if (!(isYoutubeProvider && tags.messageIsHtml)) {
+      message = parseEmotes(cheers, message, tags);
+    }
 
     if (action) {
       // action message
@@ -214,20 +321,25 @@ const onChannelFetched = (owner, params) => {
         mode: 'bottom',
       });
     } else if (boolParam('shownick')) {
-      // show nick
-
-      let text = `${linePrepend}<span class="nick" style="color: ${
-        tags.color
-      };">${
-        tags.displayName || nick
-      }:</span> <span class="message">${message}</span>`;
-
-      if (params.get('highlight') === 'message') {
+      let text;
+      if (isYoutubeProvider) {
+        text = `${linePrepend}<span class="nick" style="color: ${
+          tags.color
+        };">${tags.displayName || nick}:</span> <span class="message" style="color: ${
+          tags.color
+        };">${message}</span>`;
+      } else if (params.get('highlight') === 'message') {
         text = `${linePrepend}<span class="nick">${
           tags.displayName || nick
         }:</span> <span class="message" style="color: ${
           tags.color
         };">${message}</span>`;
+      } else {
+        text = `${linePrepend}<span class="nick" style="color: ${
+          tags.color
+        };">${
+          tags.displayName || nick
+        }:</span> <span class="message">${message}</span>`;
       }
 
       danmaku.emit({
@@ -326,20 +438,26 @@ $(() => {
    */
   const params = createWatchParams(parseQuery(location.search), {
     channel: 'c', // alias
+    provider: 'p',
+    video: 'v',
+    ytproxy: 'yp',
   });
+  const provider = getProvider(params);
+  const isYoutubeProvider = provider === PROVIDER_YOUTUBE;
 
   const paramChannel = params.get('channel');
+  const paramVideo = params.get('video');
   const pathChannel = getPathChannel();
 
   // the most important parameter
-  const channel = paramChannel || pathChannel;
+  const channel = isYoutubeProvider ? paramVideo : (paramChannel || pathChannel);
 
   if (!channel) {
     rdrToGithubRepo();
     return;
   }
 
-  const isUsingPathChannel = !paramChannel;
+  const isUsingPathChannel = !paramChannel && !isYoutubeProvider;
   const isWatchMode = isUsingPathChannel && !isOverlay();
 
   if (isWatchMode) {
@@ -348,18 +466,31 @@ $(() => {
     $('body').addClass('watch');
   }
 
+  if (isYoutubeProvider) {
+    onChannelFetched({ name: channel }, params, provider);
+    const eventName = isOverlay() ? 'mode_overlay' : 'mode_player';
+    const eventParameters = params.get();
+    gtag('event', eventName, {
+      ...eventParameters,
+      provider,
+      channel: channel || eventParameters.v,
+    });
+    return;
+  }
+
   getChannel(channel).then(
     channelOwner => {
       if (!channelOwner) {
         rdrToDefaultChannel();
         return;
       }
-      onChannelFetched(channelOwner, params);
+      onChannelFetched(channelOwner, params, provider);
 
       const eventName = isOverlay() ? 'mode_overlay' : 'mode_player';
       const eventParameters = params.get();
       gtag('event', eventName, {
         ...eventParameters,
+        provider,
         channel: channel || eventParameters.c,
       });
     },
