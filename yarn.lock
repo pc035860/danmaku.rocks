@@ -578,9 +578,9 @@ picomatch@^4.0.2, picomatch@^4.0.3, picomatch@^4.0.4:
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-4.0.4.tgz"
   integrity sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==
 
-"postcss-transform-shortcut@github:jonathantneal/postcss-transform-shortcut":
+"postcss-transform-shortcut@https://github.com/jonathantneal/postcss-transform-shortcut.git#e9ff559258d133cea625355e6aec876b4320c391":
   version "2.0.1"
-  resolved "git+ssh://git@github.com/jonathantneal/postcss-transform-shortcut.git#e9ff559258d133cea625355e6aec876b4320c391"
+  resolved "https://github.com/jonathantneal/postcss-transform-shortcut.git#e9ff559258d133cea625355e6aec876b4320c391"
   dependencies:
     postcss "^5.2.6"
 

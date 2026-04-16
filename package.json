@@ -13,7 +13,7 @@
   "devDependencies": {
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
-    "postcss-transform-shortcut": "github:jonathantneal/postcss-transform-shortcut",
+    "postcss-transform-shortcut": "https://github.com/jonathantneal/postcss-transform-shortcut.git#e9ff559258d133cea625355e6aec876b4320c391",
     "sass": "^1.86.3",
     "vite": "^6.2.5"
   },
