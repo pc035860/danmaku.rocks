@@ -3,3 +3,5 @@ node_modules
 .fusebox
 public/bundle.js
 public/bundle.js.map
+
+docs/
