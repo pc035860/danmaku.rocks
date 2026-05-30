@@ -14,7 +14,7 @@ https://danmaku.rocks/watch.html?provider=youtube&v={YOUTUBE_VIDEO_ID}
 
 ### Overlay
 
-Can be used in OBS BrowserSource. (需手動確認)
+Can be used in OBS BrowserSource.
 
 Twitch overlay:
 
@@ -42,8 +42,6 @@ https://danmaku.rocks/overlay/?provider=youtube&v={YOUTUBE_VIDEO_ID}
 | showstream | Enable stream iframe rendering (value: `0` or `1`, watch mode enables this automatically) |
 
 #### Parameter Examples (with overlay)
-
-Example URL availability on production deployment is 需手動確認.
 
 - [Basic](https://danmaku.rocks/overlay/lirik)
 - [Show Nicknames](https://danmaku.rocks/overlay/lirik?shownick=1)
