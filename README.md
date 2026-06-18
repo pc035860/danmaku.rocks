@@ -65,12 +65,6 @@ yarn install
 
 Use Node.js 22 or newer (see `engines` in `package.json`).
 
-For YouTube SSE testing, also install dependencies in your local SSE proxy project:
-
-```sh
-npm install
-```
-
 ### Dev server
 
 ```sh
@@ -79,17 +73,13 @@ yarn start
 # then open the local URL printed in the terminal (Vite default: http://localhost:5173)
 ```
 
-For YouTube mode (local), run proxy server in another terminal:
-
-```sh
-BASE_PATH="" npm run server
-```
-
-Then open:
+For YouTube mode, open:
 
 ```txt
-http://localhost:5173/watch.html?provider=youtube&v=AO8yfw84kh4&showstream=1&shownick=1&showbadges=1&ytproxy=http://localhost:3000
+http://localhost:5173/watch.html?provider=youtube&v=AO8yfw84kh4&showstream=1&shownick=1&showbadges=1
 ```
+
+The YouTube SSE proxy defaults to the hosted endpoint `https://cloud.pymaster.tw/ndapi` (see the `ytproxy` parameter in the URL Parameters table above), so no local proxy server is required.
 
 If Vite chose another port (for example when 5173 is busy), swap the host/port to match the dev server URL from your terminal.
 
